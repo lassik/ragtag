@@ -38,11 +38,11 @@ func filePathFromTrackId(trackId string) string {
 	return string(filePath)
 }
 
-func numberToString(number C.int) string {
-	if number < 1 {
+func stringFromPosInt(val int) string {
+	if val < 1 {
 		return ""
 	} else {
-		return fmt.Sprintf("%d", number)
+		return fmt.Sprintf("%d", val)
 	}
 }
 
@@ -52,9 +52,9 @@ func trackFromFilePath(filePath string) Track {
 	return Track{
 		TrackId:     trackIdFromFilePath(filePath),
 		Artist:      C.GoString(C.TagReadArtist()),
-		Year:        numberToString(C.TagReadYear()),
+		Year:        stringFromPosInt(int(C.TagReadYear())),
 		Album:       C.GoString(C.TagReadAlbum()),
-		TrackNumber: numberToString(C.TagReadTrackNumber()),
+		TrackNumber: stringFromPosInt(int(C.TagReadTrackNumber())),
 		TrackTitle:  C.GoString(C.TagReadTrackTitle()),
 		Genre:       C.GoString(C.TagReadGenre()),
 	}
