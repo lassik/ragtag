@@ -33,6 +33,18 @@ type WordCase
     | TitleCase
 
 
+wordCaseColor wordCase =
+    case wordCase of
+        LowerCase ->
+            Css.Colors.black
+
+        UpperCase ->
+            Css.Colors.blue
+
+        TitleCase ->
+            Css.Colors.green
+
+
 wordCase word =
     if String.toLower word == word then
         LowerCase
@@ -302,7 +314,12 @@ wordSpans row column s =
                     cow =
                         \button -> ClickOnWord { button = button, row = row, column = column, word = w }
                 in
-                span [ Html.Events.onClick (cow LeftMouseButton), onContextMenu (cow RightMouseButton) ] [ text word ]
+                span
+                    [ styles [ Css.color (wordCaseColor (wordCase word)) ]
+                    , Html.Events.onClick (cow LeftMouseButton)
+                    , onContextMenu (cow RightMouseButton)
+                    ]
+                    [ text word ]
             )
             (words s)
         )
