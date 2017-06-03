@@ -10,6 +10,18 @@ import Regex
 import String.Extra
 
 
+longTextColumnWidth =
+    300
+
+
+shortTextColumnWidth =
+    100
+
+
+numberColumnWidth =
+    50
+
+
 noAction : ButtonAction
 noAction model row colDef word =
     model
@@ -119,7 +131,16 @@ modifyNth f n list =
 
 
 haneTracks =
-    List.map (\t -> { artist = "Kotoko", album = "Hane", trackTitle = t })
+    List.indexedMap
+        (\t title ->
+            { artist = "Kotoko"
+            , year = "2004"
+            , album = "Hane"
+            , trackNumber = toString (t + 1)
+            , trackTitle = title
+            , genre = "J-Pop"
+            }
+        )
         [ "Introduction"
         , "Asura"
         , "Fuyu No Shizuku (Droplets Of Winter)"
@@ -142,30 +163,45 @@ model =
 
 
 type alias Track =
-    { artist : String, album : String, trackTitle : String }
+    { artist : String, year : String, album : String, trackNumber : String, trackTitle : String, genre : String }
 
 
 setArtist v track =
     { track | artist = v }
 
 
+setYear v track =
+    { track | year = v }
+
+
 setAlbum v track =
     { track | album = v }
+
+
+setTrackNumber v track =
+    { track | trackNumber = v }
 
 
 setTrackTitle v track =
     { track | trackTitle = v }
 
 
+setGenre v track =
+    { track | genre = v }
+
+
 type alias ColumnDef =
-    { heading : String, getter : Track -> String, setter : String -> Track -> Track }
+    { heading : String, getter : Track -> String, setter : String -> Track -> Track, width : Int }
 
 
 columnDefs : List ColumnDef
 columnDefs =
-    [ { heading = "Artist", getter = .artist, setter = setArtist }
-    , { heading = "Album", getter = .album, setter = setAlbum }
-    , { heading = "Track Title", getter = .trackTitle, setter = setTrackTitle }
+    [ { heading = "Artist", getter = .artist, setter = setArtist, width = longTextColumnWidth }
+    , { heading = "Year", getter = .year, setter = setYear, width = numberColumnWidth }
+    , { heading = "Album", getter = .album, setter = setAlbum, width = longTextColumnWidth }
+    , { heading = "Track#", getter = .trackNumber, setter = setTrackNumber, width = numberColumnWidth }
+    , { heading = "Track Title", getter = .trackTitle, setter = setTrackTitle, width = longTextColumnWidth }
+    , { heading = "Genre", getter = .genre, setter = setGenre, width = shortTextColumnWidth }
     ]
 
 
@@ -289,7 +325,7 @@ trackTable model =
     table [ styles tableStyles ]
         (List.append
             [ tr []
-                (List.map (\colDef -> th [ styles tableStyles ] [ text colDef.heading ])
+                (List.map (\colDef -> th [ styles (List.append tableStyles [Css.minWidth (px (toFloat colDef.width))]) ] [ text colDef.heading ])
                     columnDefs
                 )
             ]
