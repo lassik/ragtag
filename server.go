@@ -27,7 +27,9 @@ type Track struct {
 	Genre       string
 }
 
-type Tracks []Track
+type TracksResponse struct {
+	Tracks []Track
+}
 
 func trackIdFromFilePath(filePath string) string {
 	return base64.RawURLEncoding.EncodeToString([]byte(filePath))
@@ -68,13 +70,13 @@ func serveJSON(w http.ResponseWriter, v interface{}) {
 	}
 }
 
-func tracksFromRootDirectory() Tracks {
-	var tracks Tracks
+func tracksFromRootDirectory() TracksResponse {
+	var resp TracksResponse
 	filePaths, _ := filepath.Glob(path.Join(rootDirectory, "*"))
 	for _, filePath := range filePaths {
-		tracks = append(tracks, trackFromFilePath(filePath))
+		resp.Tracks = append(resp.Tracks, trackFromFilePath(filePath))
 	}
-	return tracks
+	return resp
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
