@@ -2,8 +2,8 @@ module Main exposing (..)
 
 import Css exposing (absolute, left, position, px)
 import Css.Colors
-import Html exposing (span, table, td, text, th, tr)
-import Html.Attributes exposing (class)
+import Html exposing (div, span, table, td, text, th, tr)
+import Html.Attributes exposing (class, colspan)
 import Html.Events exposing (defaultOptions)
 import Json.Decode
 import Regex
@@ -179,14 +179,18 @@ type MouseButton
 
 
 type Msg
-    = ClickOnWord { button : MouseButton, row : Int, column : ColumnDef, word : Int }
+    = SetActiveMode { newMode : Mode }
+    | ClickOnWord { button : MouseButton, row : Int, column : ColumnDef, word : Int }
 
 
 update : Msg -> Model -> Model
 update msg model =
     case model.mode of
-        Mode { title, help, leftButtonAction, rightButtonAction } ->
+        Mode { leftButtonAction, rightButtonAction } ->
             case msg of
+                SetActiveMode { newMode } ->
+                    { model | mode = newMode }
+
                 ClickOnWord { button, row, column, word } ->
                     (case button of
                         LeftMouseButton ->
@@ -253,6 +257,34 @@ wordSpans row column s =
         )
 
 
+modeSelector model =
+    case model.mode of
+        Mode { title, help } ->
+            table [ styles tableStyles ]
+                [ tr []
+                    (List.map
+                        (\mode ->
+                            case mode of
+                                Mode { title } ->
+                                    td
+                                        [ styles
+                                            (List.append tableStyles
+                                                (if model.mode == mode then
+                                                    [ Css.backgroundColor Css.Colors.black, Css.color Css.Colors.silver ]
+                                                 else
+                                                    []
+                                                )
+                                            )
+                                        , Html.Events.onClick (SetActiveMode { newMode = mode })
+                                        ]
+                                        [ text title ]
+                        )
+                        modes
+                    )
+                , tr [] [ td [ styles tableStyles, colspan (List.length modes) ] [ text help ] ]
+                ]
+
+
 trackTable model =
     table [ styles tableStyles ]
         (List.append
@@ -275,7 +307,7 @@ trackTable model =
 
 view : Model -> Html.Html Msg
 view model =
-    trackTable model
+    div [] [ modeSelector model, trackTable model ]
 
 
 main =
