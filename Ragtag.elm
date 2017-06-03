@@ -7,6 +7,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (defaultOptions)
 import Json.Decode
 import Regex
+import String.Extra
 
 
 noAction : ButtonAction
@@ -14,14 +15,28 @@ noAction model row colDef word =
     model
 
 
-upperCaseWord : ButtonAction
-upperCaseWord =
-    applyToWord String.toUpper
+wordCaseUp word =
+    if String.toLower word == word then
+        String.Extra.toSentenceCase word
+    else
+        String.toUpper word
 
 
-lowerCaseWord : ButtonAction
-lowerCaseWord =
-    applyToWord String.toLower
+wordCaseDown word =
+    if String.length word > 1 && String.toUpper word == word then
+        String.Extra.toSentenceCase (String.toLower word)
+    else
+        String.toLower word
+
+
+wordCaseUpAction : ButtonAction
+wordCaseUpAction =
+    applyToWord wordCaseUp
+
+
+wordCaseDownAction : ButtonAction
+wordCaseDownAction =
+    applyToWord wordCaseDown
 
 
 type alias ButtonAction =
@@ -45,8 +60,8 @@ wordCaseMode =
     Mode
         { title = "Word Case"
         , help = "Left-click to uppercase word. Right-click to lowercase."
-        , leftButtonAction = upperCaseWord
-        , rightButtonAction = lowerCaseWord
+        , leftButtonAction = wordCaseUpAction
+        , rightButtonAction = wordCaseDownAction
         }
 
 
