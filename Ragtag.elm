@@ -1,12 +1,12 @@
 module Main exposing (..)
 
-import Html exposing (table, tr, td, th, span, text)
-import Html.Events exposing (defaultOptions)
-import Html.Attributes exposing (class)
-import Css exposing (position, absolute, left, px)
+import Css exposing (absolute, left, position, px)
 import Css.Colors
-import Regex
+import Html exposing (span, table, td, text, th, tr)
+import Html.Attributes exposing (class)
+import Html.Events exposing (defaultOptions)
 import Json.Decode
+import Regex
 
 
 noAction : ButtonAction
