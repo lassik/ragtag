@@ -173,18 +173,17 @@ update msg model =
         Mode { title, help, leftButtonAction, rightButtonAction } ->
             case msg of
                 ClickOnWord { button, row, column, word } ->
-                    ((case button of
+                    (case button of
                         LeftMouseButton ->
                             leftButtonAction
 
                         RightMouseButton ->
                             rightButtonAction
-                     )
+                    )
                         model
                         row
                         column
                         word
-                    )
 
 
 styles =
@@ -192,7 +191,7 @@ styles =
 
 
 tableStyles =
-    [ (Css.border3 (px 1) Css.solid Css.Colors.black), (Css.borderCollapse Css.collapse) ]
+    [ Css.border3 (px 1) Css.solid Css.Colors.black, Css.borderCollapse Css.collapse ]
 
 
 words =
@@ -204,7 +203,7 @@ modifyNthWord f n s =
         (List.indexedMap
             (\w word ->
                 if w == n then
-                    (f word)
+                    f word
                 else
                     word
             )
@@ -233,7 +232,7 @@ wordSpans row column s =
                     cow =
                         \button -> ClickOnWord { button = button, row = row, column = column, word = w }
                 in
-                    span [ Html.Events.onClick (cow LeftMouseButton), onContextMenu (cow RightMouseButton) ] [ (text word) ]
+                span [ Html.Events.onClick (cow LeftMouseButton), onContextMenu (cow RightMouseButton) ] [ text word ]
             )
             (words s)
         )
