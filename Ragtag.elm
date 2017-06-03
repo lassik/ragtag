@@ -325,7 +325,7 @@ trackTable model =
     table [ styles tableStyles ]
         (List.append
             [ tr []
-                (List.map (\colDef -> th [ styles (List.append tableStyles [Css.minWidth (px (toFloat colDef.width))]) ] [ text colDef.heading ])
+                (List.map (\colDef -> th [ styles (List.append tableStyles [ Css.minWidth (px (toFloat colDef.width)) ]) ] [ text colDef.heading ])
                     columnDefs
                 )
             ]
