@@ -27,15 +27,30 @@ noAction model row colDef word =
     model
 
 
-wordCaseUp word =
+type WordCase
+    = LowerCase
+    | UpperCase
+    | TitleCase
+
+
+wordCase word =
     if String.toLower word == word then
+        LowerCase
+    else if String.length word > 1 && String.toUpper word == word then
+        UpperCase
+    else
+        TitleCase
+
+
+wordCaseUp word =
+    if wordCase word == LowerCase then
         String.Extra.toSentenceCase word
     else
         String.toUpper word
 
 
 wordCaseDown word =
-    if String.length word > 1 && String.toUpper word == word then
+    if wordCase word == UpperCase then
         String.Extra.toSentenceCase (String.toLower word)
     else
         String.toLower word
