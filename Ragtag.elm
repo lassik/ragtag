@@ -253,8 +253,7 @@ wordSpans row column s =
         )
 
 
-view : Model -> Html.Html Msg
-view model =
+trackTable model =
     table [ styles tableStyles ]
         (List.append
             [ tr []
@@ -272,6 +271,11 @@ view model =
                 model.tracks
             )
         )
+
+
+view : Model -> Html.Html Msg
+view model =
+    trackTable model
 
 
 main =
