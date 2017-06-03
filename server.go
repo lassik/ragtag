@@ -60,13 +60,21 @@ func trackFromFilePath(filePath string) Track {
 	}
 }
 
-func directoryListHandler(w http.ResponseWriter, r *http.Request) {
+func serveJSON(w http.ResponseWriter, v interface{}) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+}
+
+func tracksFromRootDirectory() Tracks {
 	var tracks Tracks
 	filePaths, _ := filepath.Glob(path.Join(rootDirectory, "*"))
 	for _, filePath := range filePaths {
 		tracks = append(tracks, trackFromFilePath(filePath))
 	}
-	json.NewEncoder(w).Encode(tracks)
+	return tracks
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +86,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	} else if p == "/style.css" {
 		fmt.Fprint(w, "")
 	} else if p == "/files" {
-		directoryListHandler(w, r)
+		serveJSON(w, tracksFromRootDirectory())
 	} else {
 		http.Error(w, "File not found.", 404)
 	}
