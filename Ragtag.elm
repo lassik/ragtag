@@ -343,7 +343,8 @@ trackTable model =
 
 view : Model -> Html.Html Msg
 view model =
-    div [] [ modeSelector model, trackTable model ]
+    div [ styles [ Css.fontFamily Css.sansSerif ] ]
+        [ modeSelector model, trackTable model ]
 
 
 main =
