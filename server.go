@@ -87,7 +87,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "elm.js")
 	} else if p == "/style.css" {
 		fmt.Fprint(w, "")
-	} else if p == "/files" {
+	} else if p == "/tracks" {
 		serveJSON(w, tracksFromRootDirectory())
 	} else {
 		http.Error(w, "File not found.", 404)
