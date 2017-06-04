@@ -14,7 +14,7 @@ extern void TagClose(void) {
 	fr = NULL;
 }
 
-extern int TagOpenRead(char *filename) {
+extern unsigned int TagOpenRead(char *filename) {
 	TagClose();
 	fr = new TagLib::FileRef(filename);
 	free(filename);
@@ -26,7 +26,7 @@ extern const char *TagReadArtist(void) {
 	return tag ? tag->artist().toCString(true) : "";
 }
 
-extern int TagReadYear(void) {
+extern unsigned int TagReadYear(void) {
 	return tag ? tag->year() : 0;
 }
 
@@ -34,7 +34,7 @@ extern const char *TagReadAlbum(void) {
 	return tag ? tag->album().toCString(true) : "";
 }
 
-extern int TagReadTrackNumber(void) {
+extern unsigned int TagReadTrackNumber(void) {
 	return tag ? tag->track() : 0;
 }
 
