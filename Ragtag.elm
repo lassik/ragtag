@@ -5,7 +5,9 @@ import Css.Colors
 import Html exposing (div, span, table, td, text, th, tr)
 import Html.Attributes exposing (class, colspan)
 import Html.Events exposing (defaultOptions)
-import Json.Decode
+import Http
+import Json.Decode as Json
+import Json.Decode.Pipeline as Jp
 import Regex
 import String.Extra
 
@@ -184,13 +186,26 @@ haneTracks =
         ]
 
 
-model : Model
-model =
-    { tracks = haneTracks, mode = wordCaseMode }
+init : ( Model, Cmd Msg )
+init =
+    ( { tracks = haneTracks, mode = wordCaseMode }
+    , getTracksInRootDirectory
+    )
 
 
 type alias Track =
     { artist : String, year : String, album : String, trackNumber : String, trackTitle : String, genre : String }
+
+
+trackDecoder : Json.Decoder Track
+trackDecoder =
+    Jp.decode Track
+        |> Jp.required "Artist" Json.string
+        |> Jp.required "Year" Json.string
+        |> Jp.required "Album" Json.string
+        |> Jp.required "TrackNumber" Json.string
+        |> Jp.required "TrackTitle" Json.string
+        |> Jp.required "Genre" Json.string
 
 
 setArtist v track =
@@ -244,28 +259,48 @@ type MouseButton
 type Msg
     = SetActiveMode { newMode : Mode }
     | ClickOnWord { button : MouseButton, row : Int, column : ColumnDef, word : Int }
+    | ReceiveTracks (Result Http.Error (List Track))
 
 
-update : Msg -> Model -> Model
+getTracksInRootDirectory : Cmd Msg
+getTracksInRootDirectory =
+    Http.send ReceiveTracks (Http.get "/tracks" (Json.field "Tracks" (Json.list trackDecoder)))
+
+
+subscriptions model =
+    Sub.none
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case model.mode of
         Mode { leftButtonAction, rightButtonAction } ->
             case msg of
                 SetActiveMode { newMode } ->
-                    { model | mode = newMode }
+                    ( { model | mode = newMode }
+                    , Cmd.none
+                    )
 
                 ClickOnWord { button, row, column, word } ->
-                    (case button of
+                    ( (case button of
                         LeftMouseButton ->
                             leftButtonAction
 
                         RightMouseButton ->
                             rightButtonAction
-                    )
+                      )
                         model
                         row
                         column
                         word
+                    , Cmd.none
+                    )
+
+                ReceiveTracks (Ok tracks) ->
+                    ( { model | tracks = tracks }, Cmd.none )
+
+                ReceiveTracks (Err _) ->
+                    ( model, Cmd.none )
 
 
 styles =
@@ -303,7 +338,7 @@ applyToWord f model row colDef word =
 
 
 onContextMenu msg =
-    Html.Events.onWithOptions "contextmenu" { defaultOptions | preventDefault = True } (Json.Decode.succeed msg)
+    Html.Events.onWithOptions "contextmenu" { defaultOptions | preventDefault = True } (Json.succeed msg)
 
 
 wordSpans row column s =
@@ -380,4 +415,4 @@ view model =
 
 
 main =
-    Html.beginnerProgram { model = model, view = view, update = update }
+    Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
