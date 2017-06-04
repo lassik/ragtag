@@ -219,7 +219,13 @@ init =
 
 
 type alias Track =
-    { artist : String, year : String, album : String, trackNumber : String, trackTitle : String, genre : String }
+    { artist : String
+    , year : String
+    , album : String
+    , trackNumber : String
+    , trackTitle : String
+    , genre : String
+    }
 
 
 trackDecoder : Json.Decoder Track
@@ -258,17 +264,45 @@ setGenre v track =
 
 
 type alias ColumnDef =
-    { heading : String, getter : Track -> String, setter : String -> Track -> Track, width : Int }
+    { heading : String
+    , getter : Track -> String
+    , setter : String -> Track -> Track
+    , width : Int
+    }
 
 
 columnDefs : List ColumnDef
 columnDefs =
-    [ { heading = "Artist", getter = .artist, setter = setArtist, width = longTextColumnWidth }
-    , { heading = "Year", getter = .year, setter = setYear, width = numberColumnWidth }
-    , { heading = "Album", getter = .album, setter = setAlbum, width = longTextColumnWidth }
-    , { heading = "Track#", getter = .trackNumber, setter = setTrackNumber, width = numberColumnWidth }
-    , { heading = "Track Title", getter = .trackTitle, setter = setTrackTitle, width = longTextColumnWidth }
-    , { heading = "Genre", getter = .genre, setter = setGenre, width = shortTextColumnWidth }
+    [ { heading = "Artist"
+      , getter = .artist
+      , setter = setArtist
+      , width = longTextColumnWidth
+      }
+    , { heading = "Year"
+      , getter = .year
+      , setter = setYear
+      , width = numberColumnWidth
+      }
+    , { heading = "Album"
+      , getter = .album
+      , setter = setAlbum
+      , width = longTextColumnWidth
+      }
+    , { heading = "Track#"
+      , getter = .trackNumber
+      , setter = setTrackNumber
+      , width = numberColumnWidth
+      }
+    , { heading = "Track Title"
+      , getter = .trackTitle
+      , setter = setTrackTitle
+      , width = longTextColumnWidth
+      }
+    , { heading = "Genre"
+      , getter = .genre
+      , setter = setGenre
+      , width = shortTextColumnWidth
+      }
     ]
 
 
@@ -283,14 +317,20 @@ type MouseButton
 
 type Msg
     = SetActiveMode { newMode : Mode }
-    | ClickOnWord { button : MouseButton, row : Int, column : ColumnDef, word : Int }
+    | ClickOnWord
+        { button : MouseButton
+        , row : Int
+        , column : ColumnDef
+        , word : Int
+        }
     | SetCellValue { row : Int, column : ColumnDef, newValue : String }
     | ReceiveTracks (Result Http.Error (List Track))
 
 
 getTracksInRootDirectory : Cmd Msg
 getTracksInRootDirectory =
-    Http.send ReceiveTracks (Http.get "/tracks" (Json.field "Tracks" (Json.list trackDecoder)))
+    Http.send ReceiveTracks
+        (Http.get "/tracks" (Json.field "Tracks" (Json.list trackDecoder)))
 
 
 subscriptions model =
@@ -323,7 +363,12 @@ update msg model =
                     )
 
                 SetCellValue { row, column, newValue } ->
-                    ( { model | tracks = modifyNth (column.setter newValue) row model.tracks }
+                    ( { model
+                        | tracks =
+                            modifyNth (column.setter newValue)
+                                row
+                                model.tracks
+                      }
                     , Cmd.none
                     )
 
@@ -339,7 +384,9 @@ styles =
 
 
 tableStyles =
-    [ Css.border3 (px 1) Css.solid Css.Colors.black, Css.borderCollapse Css.collapse ]
+    [ Css.border3 (px 1) Css.solid Css.Colors.black
+    , Css.borderCollapse Css.collapse
+    ]
 
 
 words =
@@ -362,14 +409,21 @@ modifyNthWord f n s =
 applyToWord f model row colDef word =
     { model
         | tracks =
-            modifyNth (\track -> colDef.setter (modifyNthWord f word (colDef.getter track)) track)
+            modifyNth
+                (\track ->
+                    colDef.setter
+                        (modifyNthWord f word (colDef.getter track))
+                        track
+                )
                 row
                 model.tracks
     }
 
 
 onContextMenu msg =
-    Html.Events.onWithOptions "contextmenu" { defaultOptions | preventDefault = True } (Json.succeed msg)
+    Html.Events.onWithOptions "contextmenu"
+        { defaultOptions | preventDefault = True }
+        (Json.succeed msg)
 
 
 onBlurWithTargetValue : (String -> msg) -> Html.Attribute msg
@@ -414,24 +468,39 @@ modeSelector model =
                                         [ styles
                                             (List.append tableStyles
                                                 (if model.mode == mode then
-                                                    [ Css.backgroundColor Css.Colors.black, Css.color Css.Colors.silver ]
+                                                    [ Css.backgroundColor
+                                                        Css.Colors.black
+                                                    , Css.color
+                                                        Css.Colors.silver
+                                                    ]
                                                  else
                                                     []
                                                 )
                                             )
-                                        , Html.Events.onClick (SetActiveMode { newMode = mode })
+                                        , Html.Events.onClick
+                                            (SetActiveMode { newMode = mode })
                                         ]
                                         [ text title ]
                         )
                         modes
                     )
-                , tr [] [ td [ styles tableStyles, colspan (List.length modes) ] [ text help ] ]
+                , tr []
+                    [ td
+                        [ styles tableStyles
+                        , colspan (List.length modes)
+                        ]
+                        [ text help ]
+                    ]
                 ]
 
 
 clickableTrackTr t track =
     tr []
-        (List.indexedMap (\c colDef -> td [ styles tableStyles ] (wordSpans t colDef (colDef.getter track)))
+        (List.indexedMap
+            (\c colDef ->
+                td [ styles tableStyles ]
+                    (wordSpans t colDef (colDef.getter track))
+            )
             columnDefs
         )
 
@@ -467,7 +536,18 @@ trackTable trackTr model =
     table [ styles tableStyles ]
         (List.append
             [ tr []
-                (List.map (\colDef -> th [ styles (List.append tableStyles [ Css.minWidth (px (toFloat colDef.width)) ]) ] [ text colDef.heading ])
+                (List.map
+                    (\colDef ->
+                        th
+                            [ styles
+                                (List.append tableStyles
+                                    [ Css.minWidth
+                                        (px (toFloat colDef.width))
+                                    ]
+                                )
+                            ]
+                            [ text colDef.heading ]
+                    )
                     columnDefs
                 )
             ]
@@ -484,4 +564,9 @@ view model =
 
 
 main =
-    Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
+    Html.program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
