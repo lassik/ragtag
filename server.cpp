@@ -22,6 +22,11 @@ extern unsigned int TagOpenRead(char *filename) {
 	return tag != NULL;
 }
 
+extern unsigned int TagOpenWrite(char *filename) {
+	return TagOpenRead(filename);
+}
+
+
 extern const char *TagReadArtist(void) {
 	return tag ? tag->artist().toCString(true) : "";
 }
@@ -44,4 +49,32 @@ extern const char *TagReadTrackTitle(void) {
 
 extern const char *TagReadGenre(void) {
 	return tag ? tag->genre().toCString(true) : "";
+}
+
+extern void TagWriteArtist(const char *newValue) {
+	TagLib::String stringValue(newValue);
+	tag->setArtist(stringValue);
+}
+
+extern void TagWriteYear(unsigned int newValue) {
+	tag->setYear(newValue);
+}
+
+extern void TagWriteAlbum(const char *newValue) {
+	TagLib::String stringValue(newValue);
+	tag->setAlbum(stringValue);
+}
+
+extern void TagWriteTrackNumber(unsigned int newValue) {
+	tag->setTrack(newValue);
+}
+
+extern void TagWriteTrackTitle(const char *newValue) {
+	TagLib::String stringValue(newValue);
+	tag->setTitle(stringValue);
+}
+
+extern void TagWriteGenre(const char *newValue) {
+	TagLib::String stringValue(newValue);
+	tag->setGenre(stringValue);
 }

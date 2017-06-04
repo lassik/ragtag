@@ -1,8 +1,15 @@
 extern void TagClose(void);
 extern unsigned int TagOpenRead(char *filename);
+extern unsigned int TagOpenWrite(char *filename);
 extern const char *TagReadArtist(void);
 extern unsigned int TagReadYear(void);
 extern const char *TagReadAlbum(void);
 extern unsigned int TagReadTrackNumber(void);
 extern const char *TagReadTrackTitle(void);
 extern const char *TagReadGenre(void);
+extern void TagWriteArtist(const char *newValue);
+extern void TagWriteYear(unsigned int newValue);
+extern void TagWriteAlbum(const char *newValue);
+extern void TagWriteTrackNumber(unsigned int newValue);
+extern void TagWriteTrackTitle(const char *newValue);
+extern void TagWriteGenre(const char *newValue);
