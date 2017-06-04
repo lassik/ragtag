@@ -1,4 +1,4 @@
-extern void TagClose(void);
+extern unsigned int TagClose(void);
 extern unsigned int TagOpenRead(char *filename);
 extern unsigned int TagOpenWrite(char *filename);
 extern const char *TagReadArtist(void);

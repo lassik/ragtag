@@ -7,23 +7,37 @@ extern "C" {
 
 static TagLib::FileRef *fr;
 static TagLib::Tag *tag;
+static bool writeOnClose;
 
-extern void TagClose(void) {
+extern unsigned int TagClose(void) {
+	int succeeded = 1;
+	if (writeOnClose) {
+		if (!fr->save()) {
+			succeeded = 0;
+		}
+	}
+	writeOnClose = false;
 	tag = NULL;
 	delete fr;
 	fr = NULL;
+	return succeeded;
 }
 
-extern unsigned int TagOpenRead(char *filename) {
+static unsigned int TagOpen(char *filename, bool wantWrite) {
 	TagClose();
 	fr = new TagLib::FileRef(filename);
 	free(filename);
 	tag = fr->isNull() ? NULL : fr->tag();
+	writeOnClose = wantWrite;
 	return tag != NULL;
 }
 
+extern unsigned int TagOpenRead(char *filename) {
+	return TagOpen(filename, false);
+}
+
 extern unsigned int TagOpenWrite(char *filename) {
-	return TagOpenRead(filename);
+	return TagOpen(filename, true);
 }
 
 
