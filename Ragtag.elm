@@ -382,8 +382,13 @@ wordSpans row column s =
         (List.indexedMap
             (\w word ->
                 let
-                    cow =
-                        \button -> ClickOnWord { button = button, row = row, column = column, word = w }
+                    cow button =
+                        ClickOnWord
+                            { button = button
+                            , row = row
+                            , column = column
+                            , word = w
+                            }
                 in
                 span
                     [ styles [ Css.color (wordCaseColor (wordCase word)) ]
