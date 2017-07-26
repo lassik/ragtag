@@ -19,6 +19,7 @@ var rootDirectory string
 
 type Track struct {
 	TrackId     string
+	Filename    string
 	Artist      string
 	Year        string
 	Album       string
@@ -53,6 +54,7 @@ func trackFromFilePath(filePath string) Track {
 	defer C.TagClose()
 	return Track{
 		TrackId:     trackIdFromFilePath(filePath),
+		Filename:    filePath,
 		Artist:      C.GoString(C.TagReadArtist()),
 		Year:        stringFromPosInt(int(C.TagReadYear())),
 		Album:       C.GoString(C.TagReadAlbum()),

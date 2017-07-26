@@ -193,6 +193,8 @@ haneTracks =
             , trackNumber = toString (t + 1)
             , trackTitle = title
             , genre = "J-Pop"
+            , filename = "foo"
+            , trackId = "abcdef123"
             }
         )
         [ "Introduction"
@@ -219,7 +221,9 @@ init =
 
 
 type alias Track =
-    { artist : String
+    { trackId : String
+    , filename : String
+    , artist : String
     , year : String
     , album : String
     , trackNumber : String
@@ -231,6 +235,8 @@ type alias Track =
 trackDecoder : Json.Decoder Track
 trackDecoder =
     Jp.decode Track
+        |> Jp.required "TrackId" Json.string
+        |> Jp.required "Filename" Json.string
         |> Jp.required "Artist" Json.string
         |> Jp.required "Year" Json.string
         |> Jp.required "Album" Json.string
