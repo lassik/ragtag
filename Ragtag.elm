@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Css exposing (absolute, left, pct, position, px)
 import Css.Colors
-import Html exposing (div, input, span, table, td, text, th, tr)
+import Html exposing (div, input, label, span, table, td, text, th, tr)
 import Html.Attributes exposing (class, colspan, value)
 import Html.Events exposing (defaultOptions)
 import Http
@@ -88,7 +88,7 @@ type Mode
     = Mode
         { title : String
         , help : String
-        , trackTr : Int -> Track -> Html.Html Msg
+        , trackTr : Model -> Int -> Track -> Html.Html Msg
         , leftButtonAction : ButtonAction
         , rightButtonAction : ButtonAction
         }
@@ -215,7 +215,7 @@ haneTracks =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { tracks = haneTracks, mode = wordCaseMode }
+    ( { tracks = haneTracks, mode = wordCaseMode, showFilenames = False }
     , getTracksInRootDirectory
     )
 
@@ -243,6 +243,10 @@ trackDecoder =
         |> Jp.required "TrackNumber" Json.string
         |> Jp.required "TrackTitle" Json.string
         |> Jp.required "Genre" Json.string
+
+
+setFilename v track =
+    { track | filename = v }
 
 
 setArtist v track =
@@ -274,6 +278,22 @@ type alias ColumnDef =
     , getter : Track -> String
     , setter : String -> Track -> Track
     , width : Int
+    }
+
+
+visibleColumnDefs : Model -> List ColumnDef
+visibleColumnDefs model =
+    if model.showFilenames then
+        filenameColumnDef :: columnDefs
+    else
+        columnDefs
+
+
+filenameColumnDef =
+    { heading = "Filename"
+    , getter = .filename
+    , setter = setFilename
+    , width = longTextColumnWidth
     }
 
 
@@ -313,7 +333,10 @@ columnDefs =
 
 
 type alias Model =
-    { tracks : List Track, mode : Mode }
+    { tracks : List Track
+    , mode : Mode
+    , showFilenames : Bool
+    }
 
 
 type MouseButton
@@ -330,6 +353,7 @@ type Msg
         , word : Int
         }
     | SetCellValue { row : Int, column : ColumnDef, newValue : String }
+    | ToggleShowFilenames
     | ReceiveTracks (Result Http.Error (List Track))
 
 
@@ -377,6 +401,9 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+                ToggleShowFilenames ->
+                    ( { model | showFilenames = not model.showFilenames }, Cmd.none )
 
                 ReceiveTracks (Ok tracks) ->
                     ( { model | tracks = tracks }, Cmd.none )
@@ -500,18 +527,18 @@ modeSelector model =
                 ]
 
 
-clickableTrackTr t track =
+clickableTrackTr model t track =
     tr []
         (List.indexedMap
             (\c colDef ->
                 td [ styles tableStyles ]
                     (wordSpans t colDef (colDef.getter track))
             )
-            columnDefs
+            (visibleColumnDefs model)
         )
 
 
-editableTrackTr t track =
+editableTrackTr model t track =
     tr []
         (List.indexedMap
             (\c colDef ->
@@ -534,7 +561,7 @@ editableTrackTr t track =
                         []
                     ]
             )
-            columnDefs
+            (visibleColumnDefs model)
         )
 
 
@@ -554,11 +581,23 @@ trackTable trackTr model =
                             ]
                             [ text colDef.heading ]
                     )
-                    columnDefs
+                    (visibleColumnDefs model)
                 )
             ]
-            (List.indexedMap trackTr model.tracks)
+            (List.indexedMap (trackTr model) model.tracks)
         )
+
+
+checkbox : msg -> String -> Html.Html msg
+checkbox msg name =
+    label []
+        [ input
+            [ Html.Attributes.type_ "checkbox"
+            , Html.Events.onClick msg
+            ]
+            []
+        , text name
+        ]
 
 
 view : Model -> Html.Html Msg
@@ -566,7 +605,10 @@ view model =
     case model.mode of
         Mode { trackTr } ->
             div [ styles [ Css.fontFamily Css.sansSerif ] ]
-                [ modeSelector model, trackTable trackTr model ]
+                [ modeSelector model
+                , checkbox ToggleShowFilenames "Show filenames"
+                , trackTable trackTr model
+                ]
 
 
 main =
