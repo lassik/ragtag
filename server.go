@@ -135,6 +135,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "")
 	} else if p == "/tracks" {
 		serveJSON(w, tracksFromRootDirectory())
+	} else if p == "/track" && r.Method == "PUT" {
+		writeTrackTag(w, r)
 	} else {
 		http.Error(w, "File not found.", 404)
 	}
