@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"path"
+	"os"
 	"path/filepath"
 )
 
@@ -49,10 +51,13 @@ func stringFromPosInt(val int) string {
 	}
 }
 
-func trackFromFilePath(filePath string) Track {
-	C.TagOpenRead(C.CString(filePath))
+func trackFromFilePath(filePath string) *Track {
+	gotTag := C.TagOpenRead(C.CString(filePath)) != 0
 	defer C.TagClose()
-	return Track{
+	if !gotTag {
+		return nil
+	}
+	return &Track{
 		TrackId:     trackIdFromFilePath(filePath),
 		Filename:    filePath,
 		Artist:      C.GoString(C.TagReadArtist()),
@@ -72,13 +77,52 @@ func serveJSON(w http.ResponseWriter, v interface{}) {
 	}
 }
 
+func isRegularFile(mode os.FileMode) bool {
+	return mode&os.ModeType == 0
+}
+
 func tracksFromRootDirectory() TracksResponse {
 	var resp TracksResponse
-	filePaths, _ := filepath.Glob(path.Join(rootDirectory, "*"))
-	for _, filePath := range filePaths {
-		resp.Tracks = append(resp.Tracks, trackFromFilePath(filePath))
-	}
+	filepath.Walk(rootDirectory,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return nil
+			}
+			if !isRegularFile(info.Mode()) {
+				return nil
+			}
+			track := trackFromFilePath(path)
+			if track == nil {
+				return nil
+			}
+			resp.Tracks = append(resp.Tracks, *track)
+			return nil
+		})
 	return resp
+}
+
+func writeTrackTag(w http.ResponseWriter, r *http.Request) {
+	var track Track
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+	if err := json.Unmarshal(body, &track); err != nil {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(422) // unprocessable entity
+		if err := json.NewEncoder(w).Encode(err); err != nil {
+			panic(err)
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(track); err != nil {
+		panic(err)
+	}
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
